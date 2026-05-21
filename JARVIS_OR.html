@@ -1,0 +1,1314 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>J.A.R.V.I.S</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #00d4ff;
+  --cyan: #00ffff;
+  --gold: #ffd700;
+  --red: #ff3344;
+  --green: #00ff88;
+  --purple: #9b59ff;
+  --bg: #000a14;
+  --panel: rgba(0,18,36,0.92);
+  --border: rgba(0,212,255,0.35);
+  --dim: rgba(0,212,255,0.45);
+  --text: #d0f2ff;
+  --hdr: 52px;
+  --nav: 56px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:'Rajdhani',sans-serif;color:var(--text);cursor:crosshair;
+  display:flex;flex-direction:column;height:100dvh}
+
+/* ── BACKGROUND ── */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.bg-grad{position:absolute;inset:0;
+  background:radial-gradient(ellipse at 15% 50%,rgba(0,80,180,0.18),transparent 55%),
+    radial-gradient(ellipse at 85% 20%,rgba(0,180,255,0.12),transparent 45%),
+    radial-gradient(ellipse at 50% 90%,rgba(0,60,120,0.2),transparent 55%),#000a14}
+.bg-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(0,212,255,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,0.04) 1px,transparent 1px);
+  background-size:32px 32px;animation:gridMove 25s linear infinite}
+@keyframes gridMove{to{background-position:32px 32px}}
+.scanline{position:fixed;top:0;left:0;right:0;height:2px;z-index:999;
+  background:linear-gradient(90deg,transparent,var(--cyan),transparent);
+  animation:scan 5s linear infinite;opacity:0.3;pointer-events:none}
+@keyframes scan{0%{top:0}100%{top:100%}}
+
+/* ── CORNERS ── */
+.corner{position:fixed;width:48px;height:48px;z-index:50;pointer-events:none}
+.corner::before,.corner::after{content:'';position:absolute;background:var(--blue);opacity:0.7}
+.corner::before{width:2px;height:100%}
+.corner::after{width:100%;height:2px}
+.corner.tl{top:8px;left:8px}
+.corner.tr{top:8px;right:8px;transform:scaleX(-1)}
+.corner.bl{bottom:8px;left:8px;transform:scaleY(-1)}
+.corner.br{bottom:8px;right:8px;transform:scale(-1)}
+
+/* ── HEADER ── */
+.hdr{
+  position:relative;z-index:10;
+  height:var(--hdr);flex-shrink:0;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 12px;
+  background:rgba(0,12,25,0.95);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(12px);
+}
+.hdr-logo{display:flex;align-items:center;gap:9px}
+.arc{width:34px;height:34px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle,#fff 0%,var(--cyan) 30%,var(--blue) 60%,rgba(0,40,80,0.4) 100%);
+  box-shadow:0 0 16px var(--cyan),0 0 32px rgba(0,200,255,0.4);
+  animation:arcPulse 2.5s ease-in-out infinite;position:relative}
+.arc::after{content:'';position:absolute;inset:5px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,0.5);box-shadow:inset 0 0 8px rgba(0,212,255,0.8)}
+@keyframes arcPulse{0%,100%{box-shadow:0 0 16px var(--cyan),0 0 32px rgba(0,200,255,0.4)}
+  50%{box-shadow:0 0 24px var(--cyan),0 0 48px rgba(0,200,255,0.7),0 0 64px rgba(0,120,255,0.2)}}
+.logo-t h1{font-family:'Orbitron',sans-serif;font-size:1.05rem;font-weight:900;
+  color:var(--cyan);text-shadow:0 0 16px var(--cyan);letter-spacing:4px}
+.logo-t p{font-family:'Share Tech Mono',monospace;font-size:0.48rem;color:var(--dim);letter-spacing:2px}
+.hdr-mid{display:flex;flex-direction:column;align-items:center;gap:1px}
+.clock{font-family:'Orbitron',monospace;font-size:1.3rem;font-weight:700;
+  color:var(--blue);text-shadow:0 0 16px var(--blue)}
+.date-lbl{font-family:'Share Tech Mono',monospace;font-size:0.48rem;color:var(--dim)}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.sys-stats{display:flex;gap:10px}
+.sstat{text-align:center;font-family:'Share Tech Mono',monospace;font-size:0.5rem;color:var(--dim)}
+.sstat .v{font-size:0.85rem;font-weight:700;color:var(--green);text-shadow:0 0 8px var(--green);display:block}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);
+  box-shadow:0 0 8px var(--red);animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.pring{width:7px;height:7px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px var(--green),0 0 16px rgba(0,255,136,0.4);animation:pr 3s ease-in-out infinite}
+@keyframes pr{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+
+/* ── NAV BAR ── */
+.nav{
+  position:relative;z-index:10;
+  height:var(--nav);flex-shrink:0;
+  display:flex;align-items:center;gap:4px;
+  padding:6px 8px;
+  background:rgba(0,10,22,0.97);
+  border-top:1px solid var(--border);
+  overflow-x:auto;scrollbar-width:none;
+}
+.nav::-webkit-scrollbar{display:none}
+.nb{
+  flex:1;min-width:52px;max-width:80px;
+  display:flex;flex-direction:column;align-items:center;gap:2px;
+  padding:5px 3px;
+  background:rgba(0,212,255,0.04);
+  border:1px solid rgba(0,212,255,0.12);
+  border-radius:5px;cursor:pointer;
+  transition:all 0.25s;color:var(--dim);
+  font-family:'Rajdhani',sans-serif;
+  white-space:nowrap;
+}
+.nb:hover,.nb.active{
+  background:rgba(0,212,255,0.14);
+  border-color:var(--cyan);color:var(--cyan);
+  box-shadow:0 0 12px rgba(0,212,255,0.2);
+  transform:translateY(-2px)
+}
+.nb .bi{font-size:1.1rem}
+.nb .bl{font-size:0.45rem;letter-spacing:1px;font-weight:600}
+
+/* ── CONTENT ── */
+.content{
+  flex:1;overflow:hidden;position:relative;z-index:10;
+  display:flex;
+}
+.view{
+  display:none;flex:1;overflow:hidden;padding:8px;
+  flex-direction:column;gap:8px;
+}
+.view.active{display:flex}
+
+/* ── PANEL ── */
+.panel{
+  background:var(--panel);
+  border:1px solid rgba(0,212,255,0.22);
+  border-radius:6px;backdrop-filter:blur(10px);
+  box-shadow:0 0 18px rgba(0,212,255,0.04);
+  overflow:hidden;display:flex;flex-direction:column;
+}
+.ph{
+  padding:7px 12px;
+  background:rgba(0,212,255,0.07);
+  border-bottom:1px solid rgba(0,212,255,0.15);
+  display:flex;align-items:center;gap:6px;
+  font-family:'Orbitron',sans-serif;font-size:0.55rem;
+  letter-spacing:2px;color:var(--blue);flex-shrink:0;
+}
+.ph .dot{width:5px;height:5px;border-radius:50%;
+  background:var(--blue);box-shadow:0 0 6px var(--blue);animation:blink 2s infinite}
+.pb{padding:10px;overflow-y:auto;flex:1;scrollbar-width:thin;scrollbar-color:var(--blue) transparent}
+.pb::-webkit-scrollbar{width:3px}
+.pb::-webkit-scrollbar-thumb{background:rgba(0,212,255,0.35);border-radius:2px}
+
+/* ── CHAT ── */
+#view-chat{gap:0}
+.chat-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;
+  scrollbar-width:thin;scrollbar-color:var(--blue) transparent}
+.chat-msgs::-webkit-scrollbar{width:3px}
+.chat-msgs::-webkit-scrollbar-thumb{background:rgba(0,212,255,0.3);border-radius:2px}
+.msg{display:flex;gap:8px;align-items:flex-start;animation:msgIn 0.3s ease}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{flex-direction:row-reverse}
+.mav{width:28px;height:28px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:0.75rem;
+  border:1px solid rgba(0,212,255,0.35);background:rgba(0,212,255,0.08)}
+.mb{max-width:80%;padding:8px 11px;border-radius:5px;font-size:0.78rem;line-height:1.5}
+.msg.jarvis .mb{background:rgba(0,80,180,0.18);border:1px solid rgba(0,212,255,0.2);
+  border-left:2px solid var(--blue);color:var(--text)}
+.msg.user .mb{background:rgba(0,180,100,0.12);border:1px solid rgba(0,255,136,0.2);
+  border-right:2px solid var(--green);color:var(--text)}
+.mlbl{font-family:'Orbitron',sans-serif;font-size:0.45rem;letter-spacing:2px;
+  margin-bottom:3px;color:var(--dim)}
+.typing-i{display:flex;gap:3px;padding:4px 0;align-items:center}
+.td{width:5px;height:5px;border-radius:50%;background:var(--blue);
+  animation:tdB 1.4s infinite ease-in-out}
+.td:nth-child(2){animation-delay:0.2s}
+.td:nth-child(3){animation-delay:0.4s}
+@keyframes tdB{0%,80%,100%{transform:scale(0.7);opacity:0.4}40%{transform:scale(1.2);opacity:1}}
+.input-area{padding:9px;border-top:1px solid rgba(0,212,255,0.12);
+  background:rgba(0,212,255,0.02);flex-shrink:0}
+.input-row{display:flex;gap:6px;align-items:center}
+.voice-btn{width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  background:rgba(0,212,255,0.08);border:1.5px solid var(--blue);
+  color:var(--cyan);font-size:0.9rem;cursor:pointer;transition:all 0.3s;
+  display:flex;align-items:center;justify-content:center}
+.voice-btn.listening{animation:vp 1s infinite;border-color:var(--red);background:rgba(255,50,50,0.15)}
+@keyframes vp{0%,100%{box-shadow:0 0 0 0 rgba(255,50,50,0.5)}50%{box-shadow:0 0 0 8px rgba(255,50,50,0)}}
+.txt-in{flex:1;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.28);
+  border-radius:4px;padding:8px 11px;color:var(--text);
+  font-family:'Rajdhani',sans-serif;font-size:0.82rem;outline:none;transition:all 0.3s}
+.txt-in:focus{border-color:var(--cyan);box-shadow:0 0 12px rgba(0,212,255,0.18);
+  background:rgba(0,212,255,0.09)}
+.txt-in::placeholder{color:var(--dim);font-size:0.75rem}
+.send-btn{padding:8px 14px;background:rgba(0,212,255,0.12);border:1px solid var(--blue);
+  border-radius:4px;color:var(--cyan);font-family:'Orbitron',sans-serif;
+  font-size:0.5rem;letter-spacing:2px;cursor:pointer;transition:all 0.3s;white-space:nowrap}
+.send-btn:hover{background:rgba(0,212,255,0.25);box-shadow:0 0 15px rgba(0,212,255,0.25)}
+.chat-top{display:flex;justify-content:space-between;align-items:center;
+  padding:7px 12px;background:rgba(0,212,255,0.07);border-bottom:1px solid rgba(0,212,255,0.15);
+  flex-shrink:0}
+.chat-top-l{display:flex;align-items:center;gap:6px;font-family:'Orbitron',sans-serif;
+  font-size:0.55rem;letter-spacing:2px;color:var(--blue)}
+.chat-top-l .dot{width:5px;height:5px;border-radius:50%;background:var(--blue);
+  box-shadow:0 0 6px var(--blue);animation:blink 2s infinite}
+.viz{display:flex;align-items:flex-end;gap:2px;height:28px}
+.vb{flex:1;width:3px;background:linear-gradient(to top,var(--blue),var(--cyan));
+  border-radius:1px 1px 0 0;min-height:2px;opacity:0.65;
+  animation:va var(--d) ease-in-out infinite alternate;box-shadow:0 0 3px var(--blue)}
+@keyframes va{from{height:var(--mn)}to{height:var(--mx)}}
+
+/* ── DEVICES VIEW ── */
+#view-devices .scroll-y{overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:7px;padding:2px}
+.dev-item{
+  display:flex;align-items:center;gap:9px;
+  padding:9px 10px;
+  border:1px solid rgba(0,212,255,0.15);
+  border-left:3px solid var(--green);
+  border-radius:5px;cursor:pointer;
+  transition:all 0.25s;position:relative;overflow:hidden;
+  background:rgba(0,212,255,0.03);flex-shrink:0;
+}
+.dev-item.offline{border-left-color:var(--red)}
+.dev-item:hover{background:rgba(0,212,255,0.07);border-color:var(--blue);
+  box-shadow:0 0 12px rgba(0,212,255,0.08);transform:translateX(2px)}
+.dev-ic{font-size:1.2rem;flex-shrink:0}
+.dev-info{flex:1;min-width:0}
+.dev-name{font-size:0.78rem;font-weight:600;color:var(--text)}
+.dev-status{font-size:0.56rem;font-family:'Share Tech Mono',monospace;color:var(--dim)}
+.dev-btns{display:flex;gap:4px;flex-shrink:0}
+.db{padding:3px 8px;background:rgba(0,212,255,0.08);
+  border:1px solid rgba(0,212,255,0.25);border-radius:3px;
+  color:var(--cyan);font-size:0.52rem;font-family:'Orbitron',sans-serif;
+  cursor:pointer;transition:all 0.2s}
+.db:hover{background:rgba(0,212,255,0.2);box-shadow:0 0 8px rgba(0,212,255,0.25)}
+.slider-r{margin-bottom:8px}
+.slider-lbl{font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--dim);
+  margin-bottom:4px;display:flex;justify-content:space-between}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;
+  background:rgba(0,212,255,0.2);border-radius:2px;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;
+  border-radius:50%;background:var(--cyan);box-shadow:0 0 7px var(--cyan);cursor:pointer}
+
+/* ── QUICK GRID ── */
+.qgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px}
+.qb{padding:9px 5px;background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.18);
+  border-radius:5px;color:var(--cyan);font-family:'Rajdhani',sans-serif;
+  font-size:0.62rem;font-weight:600;cursor:pointer;transition:all 0.25s;
+  text-align:center;letter-spacing:0.5px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.qb:hover,.qb:active{background:rgba(0,212,255,0.15);border-color:var(--cyan);
+  box-shadow:0 0 12px rgba(0,212,255,0.18);transform:translateY(-1px)}
+.qb .qi{font-size:1.1rem}
+
+/* ── RESEARCH ── */
+#view-research{gap:8px}
+.res-tabs{display:flex;gap:5px;flex-shrink:0}
+.rtab{flex:1;padding:7px;background:rgba(0,212,255,0.05);
+  border:1px solid rgba(0,212,255,0.15);border-radius:4px;
+  color:var(--dim);font-family:'Orbitron',sans-serif;
+  font-size:0.52rem;letter-spacing:1px;cursor:pointer;text-align:center;transition:all 0.25s}
+.rtab.active,.rtab:hover{background:rgba(0,212,255,0.15);border-color:var(--cyan);
+  color:var(--cyan);box-shadow:0 0 10px rgba(0,212,255,0.15)}
+.res-in{width:100%;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.28);
+  border-radius:4px;padding:9px 11px;color:var(--text);
+  font-family:'Rajdhani',sans-serif;font-size:0.82rem;outline:none;
+  resize:none;transition:all 0.3s}
+.res-in:focus{border-color:var(--cyan);box-shadow:0 0 10px rgba(0,212,255,0.15);
+  background:rgba(0,212,255,0.09)}
+.res-in::placeholder{color:var(--dim)}
+.res-btns{display:flex;gap:6px;flex-shrink:0}
+.rbtn{flex:1;padding:9px;background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);
+  border-radius:4px;color:var(--cyan);font-family:'Rajdhani',sans-serif;
+  font-size:0.72rem;font-weight:600;cursor:pointer;transition:all 0.25s;text-align:center}
+.rbtn:hover{background:rgba(0,212,255,0.2);box-shadow:0 0 12px rgba(0,212,255,0.2)}
+.rbtn.gold{border-color:var(--gold);color:var(--gold)}
+.rbtn.gold:hover{background:rgba(255,215,0,0.1);box-shadow:0 0 12px rgba(255,215,0,0.2)}
+.res-out{flex:1;overflow-y:auto;padding:11px;
+  background:rgba(0,30,60,0.3);border:1px solid rgba(0,212,255,0.15);
+  border-radius:4px;font-size:0.75rem;line-height:1.65;color:var(--text);
+  scrollbar-width:thin;scrollbar-color:var(--blue) transparent;
+  white-space:pre-wrap;word-break:break-word}
+.res-out::-webkit-scrollbar{width:3px}
+.res-out::-webkit-scrollbar-thumb{background:rgba(0,212,255,0.3);border-radius:2px}
+.res-spinner{display:none;text-align:center;padding:20px;color:var(--cyan);
+  font-family:'Share Tech Mono',monospace;font-size:0.7rem}
+.res-spinner.show{display:block}
+.spin-ring{width:32px;height:32px;border-radius:50%;
+  border:2px solid rgba(0,212,255,0.2);border-top-color:var(--cyan);
+  animation:spin 0.8s linear infinite;margin:0 auto 10px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.res-chips{display:flex;flex-wrap:wrap;gap:5px;flex-shrink:0}
+.chip{padding:4px 9px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.18);
+  border-radius:20px;color:var(--dim);font-size:0.6rem;font-family:'Share Tech Mono',monospace;
+  cursor:pointer;transition:all 0.2s}
+.chip:hover{color:var(--cyan);border-color:var(--cyan)}
+
+/* ── SECURITY ── */
+#view-security{gap:8px}
+.sec-status{
+  padding:12px;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.2);
+  border-radius:5px;text-align:center;flex-shrink:0}
+.sec-lbl{font-family:'Orbitron',sans-serif;font-size:0.55rem;letter-spacing:3px;
+  color:var(--green);text-shadow:0 0 10px var(--green);margin-bottom:3px}
+.sec-val{font-family:'Share Tech Mono',monospace;font-size:1.1rem;
+  color:var(--green);text-shadow:0 0 15px var(--green)}
+.sec-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;flex-shrink:0}
+.scmd{padding:11px 8px;background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.2);
+  border-radius:5px;color:var(--cyan);font-family:'Rajdhani',sans-serif;
+  font-size:0.72rem;font-weight:600;cursor:pointer;transition:all 0.25s;text-align:center}
+.scmd:hover{background:rgba(0,212,255,0.15);box-shadow:0 0 12px rgba(0,212,255,0.18)}
+.scmd.red{border-color:rgba(255,50,50,0.4);color:var(--red)}
+.scmd.red:hover{background:rgba(255,50,50,0.1);box-shadow:0 0 12px rgba(255,50,50,0.2)}
+.cam-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:1}
+.cam{background:rgba(0,10,20,0.8);border:1px solid rgba(0,212,255,0.18);
+  border-radius:4px;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:4px;cursor:pointer;transition:all 0.25s;min-height:70px}
+.cam:hover{border-color:var(--cyan);background:rgba(0,212,255,0.05)}
+.cam-ic{font-size:1.4rem}
+.cam-lbl{font-family:'Share Tech Mono',monospace;font-size:0.5rem;color:var(--dim)}
+.cam-status{font-size:0.5rem;font-family:'Share Tech Mono',monospace;color:var(--green)}
+
+/* ── SYSTEM ── */
+#view-system{gap:7px}
+.metric{margin-bottom:10px}
+.metric-top{display:flex;justify-content:space-between;
+  font-family:'Share Tech Mono',monospace;font-size:0.6rem;margin-bottom:4px;color:var(--dim)}
+.metric-top .mv{color:var(--cyan)}
+.bar-t{height:4px;background:rgba(0,212,255,0.12);border-radius:2px;overflow:hidden}
+.bar-f{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));
+  border-radius:2px;transition:width 0.8s ease;box-shadow:0 0 6px rgba(0,212,255,0.4)}
+.bar-f.warn{background:linear-gradient(90deg,#ff8800,#ffaa00)}
+.bar-f.crit{background:linear-gradient(90deg,#ff2200,#ff5500)}
+.sys-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;flex-shrink:0}
+.sys-card{padding:10px;background:rgba(0,212,255,0.04);border:1px solid rgba(0,212,255,0.15);
+  border-radius:5px;text-align:center}
+.sys-card .sc-v{font-family:'Share Tech Mono',monospace;font-size:1rem;font-weight:700;
+  color:var(--cyan);text-shadow:0 0 8px var(--cyan)}
+.sys-card .sc-l{font-family:'Share Tech Mono',monospace;font-size:0.5rem;color:var(--dim);margin-top:2px}
+.radar-wrap{display:flex;justify-content:center;align-items:center;padding:5px 0}
+.radar{position:relative;width:130px;height:130px;border-radius:50%;
+  border:1.5px solid rgba(0,212,255,0.25);
+  background:radial-gradient(circle,rgba(0,40,80,0.35),rgba(0,8,16,0.6))}
+.radar::before,.radar::after{content:'';position:absolute;border-radius:50%;
+  border:1px solid rgba(0,212,255,0.12)}
+.radar::before{inset:25%}
+.radar::after{inset:50%}
+.radar-l{position:absolute;top:50%;left:50%;width:50%;height:1.5px;
+  background:linear-gradient(90deg,rgba(0,255,136,0.8),transparent);
+  transform-origin:left center;animation:rSpin 3s linear infinite}
+@keyframes rSpin{to{transform:rotate(360deg)}}
+.radar-c{position:absolute;inset:0;
+  background:conic-gradient(from 0deg,rgba(0,255,136,0.15),transparent 30%);
+  border-radius:50%;animation:rSpin 3s linear infinite}
+.radar-d{position:absolute;width:6px;height:6px;border-radius:50%;
+  background:var(--cyan);box-shadow:0 0 6px var(--cyan);
+  animation:rdP 2s ease-in-out infinite;transform:translate(-50%,-50%)}
+@keyframes rdP{0%,100%{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  50%{opacity:0.3;transform:translate(-50%,-50%) scale(0.5)}}
+.radar-xl{position:absolute;top:50%;left:0;right:0;height:1px;background:rgba(0,212,255,0.12);
+  transform:translateY(-50%)}
+.radar-yl{position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(0,212,255,0.12)}
+
+/* ── MEDIA ── */
+#view-media{gap:8px}
+.media-search{display:flex;gap:6px;flex-shrink:0}
+.media-in{flex:1;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.28);
+  border-radius:4px;padding:8px 11px;color:var(--text);
+  font-family:'Rajdhani',sans-serif;font-size:0.82rem;outline:none}
+.media-in:focus{border-color:var(--cyan)}
+.media-in::placeholder{color:var(--dim)}
+.media-btn{padding:8px 12px;background:rgba(0,212,255,0.1);border:1px solid var(--blue);
+  border-radius:4px;color:var(--cyan);font-family:'Orbitron',sans-serif;
+  font-size:0.5rem;letter-spacing:1px;cursor:pointer;transition:all 0.25s}
+.media-btn:hover{background:rgba(0,212,255,0.22)}
+.media-cats{display:flex;gap:5px;flex-shrink:0;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.media-cats::-webkit-scrollbar{display:none}
+.mcat{padding:5px 11px;background:rgba(0,212,255,0.05);border:1px solid rgba(0,212,255,0.15);
+  border-radius:20px;color:var(--dim);font-size:0.58rem;font-family:'Share Tech Mono',monospace;
+  cursor:pointer;transition:all 0.2s;white-space:nowrap;flex-shrink:0}
+.mcat.active,.mcat:hover{background:rgba(0,212,255,0.15);border-color:var(--cyan);color:var(--cyan)}
+.media-out{flex:1;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--blue) transparent}
+.media-out::-webkit-scrollbar{width:3px}
+.media-out::-webkit-scrollbar-thumb{background:rgba(0,212,255,0.3);border-radius:2px}
+.media-card{display:flex;gap:9px;padding:9px;margin-bottom:7px;
+  background:rgba(0,212,255,0.03);border:1px solid rgba(0,212,255,0.12);
+  border-radius:5px;cursor:pointer;transition:all 0.25s}
+.media-card:hover{background:rgba(0,212,255,0.08);border-color:rgba(0,212,255,0.3)}
+.mc-thumb{width:44px;height:44px;border-radius:4px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+  background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.15)}
+.mc-info{flex:1;min-width:0}
+.mc-title{font-size:0.78rem;font-weight:600;color:var(--text);margin-bottom:2px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mc-meta{font-size:0.58rem;font-family:'Share Tech Mono',monospace;color:var(--dim)}
+.mc-action{display:flex;gap:4px;flex-shrink:0;align-items:center}
+.mca{padding:4px 8px;border-radius:3px;font-size:0.52rem;font-family:'Orbitron',sans-serif;
+  cursor:pointer;transition:all 0.2s}
+.mca.play{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--green)}
+.mca.tv{background:rgba(0,212,255,0.08);border:1px solid rgba(0,212,255,0.25);color:var(--cyan)}
+.media-loading{text-align:center;padding:20px;color:var(--dim);
+  font-family:'Share Tech Mono',monospace;font-size:0.7rem}
+
+/* ── NOTIF ── */
+.notif-i{padding:7px 10px;border-left:2px solid var(--blue);
+  background:rgba(0,212,255,0.03);margin-bottom:5px;
+  border-radius:0 4px 4px 0;font-size:0.68rem;animation:nPop 0.35s ease}
+@keyframes nPop{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.notif-i.warn{border-color:var(--gold)}
+.notif-i.alert{border-color:var(--red)}
+.notif-i.ok{border-color:var(--green)}
+.nt{font-family:'Share Tech Mono',monospace;font-size:0.5rem;color:var(--dim);margin-bottom:2px}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,5,15,0.88);backdrop-filter:blur(6px);
+  align-items:center;justify-content:center;padding:15px}
+.modal-overlay.open{display:flex}
+.modal{background:rgba(0,12,26,0.98);border:1px solid var(--blue);
+  border-radius:7px;padding:20px;width:100%;max-width:420px;
+  box-shadow:0 0 50px rgba(0,212,255,0.18);animation:mIn 0.28s ease;position:relative;
+  max-height:85vh;overflow-y:auto}
+@keyframes mIn{from{opacity:0;transform:scale(0.92)}to{opacity:1;transform:scale(1)}}
+.modal h2{font-family:'Orbitron',sans-serif;font-size:0.8rem;letter-spacing:3px;
+  color:var(--cyan);margin-bottom:16px;text-align:center;text-shadow:0 0 12px var(--cyan)}
+.mcls{position:absolute;top:12px;right:12px;background:none;
+  border:1px solid rgba(0,212,255,0.25);color:var(--dim);width:26px;height:26px;
+  border-radius:50%;cursor:pointer;font-size:0.75rem;display:flex;align-items:center;
+  justify-content:center;transition:all 0.2s}
+.mcls:hover{border-color:var(--red);color:var(--red)}
+.cmd-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cmdb{padding:11px;background:rgba(0,212,255,0.07);border:1px solid rgba(0,212,255,0.22);
+  border-radius:4px;color:var(--cyan);font-family:'Rajdhani',sans-serif;
+  font-size:0.76rem;font-weight:600;cursor:pointer;transition:all 0.25s;text-align:center}
+.cmdb:hover{background:rgba(0,212,255,0.18);box-shadow:0 0 12px rgba(0,212,255,0.18)}
+
+/* ── HELPERS ── */
+.row{display:flex;gap:8px}
+.g{color:var(--green);text-shadow:0 0 8px var(--green)}
+.r{color:var(--red)}
+.gl{color:var(--gold)}
+.cy{color:var(--cyan)}
+.section-title{font-family:'Orbitron',sans-serif;font-size:0.52rem;letter-spacing:2px;
+  color:var(--dim);margin-bottom:6px;margin-top:4px}
+
+/* ── PORTRAIT SPECIFIC ── */
+@media(orientation:portrait){
+  .view{padding:6px}
+  .qgrid{grid-template-columns:repeat(4,1fr)}
+  .sys-grid{grid-template-columns:repeat(3,1fr)}
+}
+/* ── LANDSCAPE ── */
+@media(orientation:landscape){
+  .hdr{height:42px}
+  .nav{height:46px}
+  .logo-t h1{font-size:0.9rem}
+  .clock{font-size:1.1rem}
+  #view-chat{flex-direction:row;gap:8px}
+  #view-chat .chat-msgs{min-height:0}
+  .input-area{min-width:0}
+  #view-devices{flex-direction:row;gap:8px}
+  .dev-side{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px}
+  .qgrid{grid-template-columns:repeat(2,1fr)}
+  #view-research{flex-direction:row}
+  .res-left{flex:1;display:flex;flex-direction:column;gap:7px;min-width:0}
+  .res-right{flex:1;display:flex;flex-direction:column;gap:7px;min-width:0}
+  #view-security{flex-direction:row}
+  .sec-left{flex:1;display:flex;flex-direction:column;gap:7px}
+  .sec-right{flex:1;display:flex;flex-direction:column;gap:7px}
+  .cam-grid{grid-template-columns:repeat(2,1fr)}
+  #view-system{flex-direction:row;flex-wrap:wrap}
+  #view-system .panel{flex:1;min-width:140px}
+}
+
+/* ── SETTINGS ── */
+#view-settings{gap:8px;overflow-y:auto}
+.setting-row{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 12px;background:rgba(0,212,255,0.03);border:1px solid rgba(0,212,255,0.12);
+  border-radius:5px;margin-bottom:6px}
+.setting-lbl{font-size:0.75rem;font-weight:600;color:var(--text)}
+.setting-sub{font-family:'Share Tech Mono',monospace;font-size:0.52rem;color:var(--dim);margin-top:2px}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.tog-sl{position:absolute;cursor:pointer;inset:0;background:rgba(0,212,255,0.12);
+  border:1px solid rgba(0,212,255,0.25);border-radius:22px;transition:all 0.3s}
+.tog-sl::before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;
+  background:var(--dim);border-radius:50%;transition:all 0.3s}
+input:checked+.tog-sl{background:rgba(0,212,255,0.25);border-color:var(--cyan)}
+input:checked+.tog-sl::before{transform:translateX(18px);background:var(--cyan);
+  box-shadow:0 0 6px var(--cyan)}
+.name-in{background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.25);
+  border-radius:4px;padding:5px 9px;color:var(--text);font-family:'Rajdhani',sans-serif;
+  font-size:0.8rem;outline:none;width:130px}
+.name-in:focus{border-color:var(--cyan)}
+
+/* ── POWER VIEW ── */
+#view-power{gap:8px;align-items:center;justify-content:center}
+.power-arc{width:100px;height:100px;border-radius:50%;flex-shrink:0;
+  background:radial-gradient(circle,#fff 0%,var(--cyan) 25%,var(--blue) 55%,rgba(0,30,60,0.4) 100%);
+  box-shadow:0 0 40px var(--cyan),0 0 80px rgba(0,150,255,0.3);
+  animation:arcPulse 2s ease-in-out infinite;margin:10px auto}
+.power-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:300px}
+.pwb{padding:12px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);
+  border-radius:5px;color:var(--cyan);font-family:'Rajdhani',sans-serif;
+  font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.25s;text-align:center}
+.pwb:hover{background:rgba(0,212,255,0.16);box-shadow:0 0 12px rgba(0,212,255,0.18)}
+.pwb.red{border-color:rgba(255,50,50,0.4);color:var(--red)}
+.pwb.red:hover{background:rgba(255,50,50,0.1)}
+</style>
+</head>
+<body>
+
+<!-- BG -->
+<div class="bg">
+  <div class="bg-grad"></div>
+  <div class="bg-grid"></div>
+</div>
+<div class="scanline"></div>
+<div class="corner tl"></div>
+<div class="corner tr"></div>
+<div class="corner bl"></div>
+<div class="corner br"></div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-logo">
+    <div class="arc"></div>
+    <div class="logo-t">
+      <h1>J.A.R.V.I.S</h1>
+      <p>JUST A RATHER VERY INTELLIGENT SYSTEM — v9.1.0</p>
+    </div>
+  </div>
+  <div class="hdr-mid">
+    <div class="clock" id="clock">--:--:--</div>
+    <div class="date-lbl" id="dateLbl">---</div>
+  </div>
+  <div class="hdr-right">
+    <div class="sys-stats">
+      <div class="sstat"><span class="v" id="hCpu">--</span>CPU</div>
+      <div class="sstat"><span class="v" id="hRam" style="color:var(--blue);text-shadow:0 0 8px var(--blue)">--</span>RAM</div>
+    </div>
+    <div class="live-dot"></div>
+    <div class="pring"></div>
+  </div>
+</header>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- CHAT VIEW -->
+  <div class="view active" id="view-chat">
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden" class="panel">
+      <div class="chat-top">
+        <div class="chat-top-l">
+          <div class="dot"></div>
+          JARVIS ANA ARAYÜZ
+          <span style="font-family:'Share Tech Mono';font-size:0.48rem;color:var(--dim);margin-left:4px">◆ CLAUDE AI</span>
+        </div>
+        <div class="viz" id="viz"></div>
+      </div>
+      <div class="chat-msgs" id="chatMsgs">
+        <div class="msg jarvis">
+          <div class="mav">🤖</div>
+          <div>
+            <div class="mlbl">J.A.R.V.I.S</div>
+            <div class="mb">Merhaba efendim. Tüm sistemler çevrimiçi ve hazır. TV'nizi açmamı, film önermemi, araştırma yapmamı, cihazlarınızı kontrol etmemi veya başka herhangi bir konuda yardım etmemi isteyebilirsiniz. Bugün size nasıl hizmet edebilirim?</div>
+          </div>
+        </div>
+      </div>
+      <div class="input-area">
+        <div class="input-row">
+          <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()">🎤</button>
+          <input class="txt-in" id="userIn" placeholder="JARVIS'e komut verin... (TV'yi aç, film öner...)" onkeydown="if(event.key==='Enter')sendMsg()">
+          <button class="send-btn" onclick="sendMsg()">GÖNDER ▶</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEVICES VIEW -->
+  <div class="view" id="view-devices">
+    <div class="panel" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+      <div class="ph"><div class="dot"></div>BAĞLI CİHAZLAR</div>
+      <div class="pb scroll-y" id="devList">
+        <!-- injected by JS -->
+      </div>
+    </div>
+    <div class="panel" style="flex-shrink:0">
+      <div class="ph"><div class="dot"></div>HIZLI İŞLEMLER</div>
+      <div class="pb">
+        <div class="qgrid">
+          <button class="qb" onclick="qAct('film')"><span class="qi">🎬</span>FİLM AÇ</button>
+          <button class="qb" onclick="qAct('music')"><span class="qi">🎵</span>MÜZİK</button>
+          <button class="qb" onclick="qAct('alarm')"><span class="qi">⏰</span>ALARM</button>
+          <button class="qb" onclick="qAct('weather')"><span class="qi">🌤</span>HAVA</button>
+          <button class="qb" onclick="qAct('navigate')"><span class="qi">🗺️</span>NAVİG.</button>
+          <button class="qb" onclick="qAct('news')"><span class="qi">📰</span>HABERLER</button>
+          <button class="qb" onclick="qAct('lock')"><span class="qi">🔐</span>KİLİTLE</button>
+          <button class="qb" onclick="qAct('calc')"><span class="qi">🧮</span>HESAPLA</button>
+          <button class="qb" onclick="qAct('translate')"><span class="qi">🌐</span>ÇEVİR</button>
+          <button class="qb" onclick="qAct('timer')"><span class="qi">⏱</span>SAYAÇ</button>
+          <button class="qb" onclick="qAct('remind')"><span class="qi">📌</span>HATIRLA</button>
+          <button class="qb" onclick="qAct('joke')"><span class="qi">😄</span>ŞAKA</button>
+        </div>
+        <div class="slider-r">
+          <div class="slider-lbl"><span>SES</span><span id="volD">70%</span></div>
+          <input type="range" min="0" max="100" value="70" oninput="document.getElementById('volD').textContent=this.value+'%'">
+        </div>
+        <div class="slider-r">
+          <div class="slider-lbl"><span>PARLAKLIK</span><span id="brightD">85%</span></div>
+          <input type="range" min="0" max="100" value="85" oninput="document.getElementById('brightD').textContent=this.value+'%'">
+        </div>
+        <div class="slider-r">
+          <div class="slider-lbl"><span>KLIMA (°C)</span><span id="klimaD">22°C</span></div>
+          <input type="range" min="16" max="30" value="22" oninput="document.getElementById('klimaD').textContent=this.value+'°C'">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESEARCH VIEW -->
+  <div class="view" id="view-research">
+    <div class="panel" style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:0">
+      <div class="ph"><div class="dot"></div>ARAŞTIRMA MERKEZİ — AI DESTEKLI</div>
+      <div class="pb" style="display:flex;flex-direction:column;gap:8px;overflow:hidden;flex:1">
+        <div class="res-tabs">
+          <button class="rtab active" id="tab-deep" onclick="setResTab('deep')">🔬 DERİN ARAŞTIRMA</button>
+          <button class="rtab" id="tab-quick" onclick="setResTab('quick')">⚡ HIZLI ARAMA</button>
+          <button class="rtab" id="tab-sum" onclick="setResTab('sum')">📊 ÖZET AL</button>
+          <button class="rtab" id="tab-comp" onclick="setResTab('comp')">⚖️ KARŞILAŞTIR</button>
+        </div>
+        <div class="res-chips" id="resChips">
+          <span class="chip" onclick="setResInput('Yapay zeka güncel gelişmeler')">🤖 AI Gelişmeleri</span>
+          <span class="chip" onclick="setResInput('Uzay keşfi son haberler')">🚀 Uzay</span>
+          <span class="chip" onclick="setResInput('Sağlık ve beslenme tavsiyeleri')">🏥 Sağlık</span>
+          <span class="chip" onclick="setResInput('Teknoloji trendleri 2025')">💻 Teknoloji</span>
+          <span class="chip" onclick="setResInput('Ekonomi ve finans analizi')">💹 Ekonomi</span>
+          <span class="chip" onclick="setResInput('Bilim son keşifler')">🔬 Bilim</span>
+        </div>
+        <textarea class="res-in" id="resIn" rows="2" placeholder="Araştırmak istediğiniz konuyu yazın... (Enter = çalıştır)"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();doResearch()}"></textarea>
+        <div class="res-btns">
+          <button class="rbtn" onclick="doResearch()">🔍 ARAŞTIR</button>
+          <button class="rbtn gold" onclick="doDeepResearch()">✨ DERİN ANALİZ</button>
+          <button class="rbtn" onclick="clearRes()" style="max-width:80px">🗑 TEMİZLE</button>
+        </div>
+        <div class="res-spinner" id="resSpinner">
+          <div class="spin-ring"></div>
+          <span id="spinnerTxt">Araştırılıyor...</span>
+        </div>
+        <div class="res-out" id="resOut" style="flex:1">Araştırma motoru hazır efendim. Konu yazıp ARAŞTIR'a basın veya hızlı chip'lere dokunun.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEDIA VIEW -->
+  <div class="view" id="view-media">
+    <div class="panel" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+      <div class="ph"><div class="dot"></div>MEDYA MERKEZİ</div>
+      <div class="pb" style="display:flex;flex-direction:column;gap:7px;overflow:hidden;flex:1">
+        <div class="media-search">
+          <input class="media-in" id="mediaIn" placeholder="Film, dizi, müzik ara..." onkeydown="if(event.key==='Enter')searchMedia()">
+          <button class="media-btn" onclick="searchMedia()">ARA</button>
+        </div>
+        <div class="media-cats">
+          <span class="mcat active" onclick="mediaFilter(this,'Aksiyon film öner 5 tane')">🎬 Aksiyon</span>
+          <span class="mcat" onclick="mediaFilter(this,'Bilim kurgu film öner 5 tane')">🚀 Sci-Fi</span>
+          <span class="mcat" onclick="mediaFilter(this,'Komedi film öner 5 tane')">😂 Komedi</span>
+          <span class="mcat" onclick="mediaFilter(this,'Gerilim film öner 5 tane')">😰 Gerilim</span>
+          <span class="mcat" onclick="mediaFilter(this,'Animasyon film öner 5 tane')">🎭 Animasyon</span>
+          <span class="mcat" onclick="mediaFilter(this,'Netflix dizi öner 5 tane')">📺 Dizi</span>
+          <span class="mcat" onclick="mediaFilter(this,'En iyi Türk filmleri öner 5 tane')">🇹🇷 Türk Film</span>
+          <span class="mcat" onclick="mediaFilter(this,'Rahatlatıcı müzik playlist öner')">🎵 Müzik</span>
+        </div>
+        <div class="media-loading" id="mediaLoading" style="display:none">
+          <div class="spin-ring"></div>Yükleniyor...
+        </div>
+        <div class="media-out" id="mediaOut">
+          <div style="text-align:center;padding:20px;color:var(--dim);font-family:'Share Tech Mono',monospace;font-size:0.7rem">
+            Bir kategori seçin veya arama yapın efendim.<br>JARVIS film ve dizi önerecek, TV'nize gönderebileceksiniz.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECURITY VIEW -->
+  <div class="view" id="view-security">
+    <div style="display:flex;flex-direction:column;gap:7px;flex:1;overflow:hidden">
+      <div class="sec-status panel" style="padding:12px">
+        <div class="ph" style="padding:0 0 8px 0;border:none;background:none"><div class="dot"></div>GÜVENLİK DURUMU</div>
+        <div class="sec-lbl">SİSTEM DURUMU</div>
+        <div class="sec-val" id="secStatus">● GÜVENLİ</div>
+      </div>
+      <div class="sec-grid">
+        <button class="scmd" onclick="secCmd('lock')">🔒 HEPSİNİ KİLİTLE</button>
+        <button class="scmd" onclick="secCmd('alarm')">🚨 ALARM AKTİF</button>
+        <button class="scmd" onclick="secCmd('guest')">👤 MİSAFİR MODU</button>
+        <button class="scmd" onclick="secCmd('report')">📋 RAPOR AL</button>
+        <button class="scmd" onclick="secCmd('vpn')">🛡 VPN AKTİF ET</button>
+        <button class="scmd red" onclick="secCmd('emergency')">🆘 ACİL DURUM</button>
+      </div>
+      <div class="cam-grid" style="flex:1;min-height:120px">
+        <div class="cam panel" onclick="camView('Giriş')">
+          <div class="cam-ic">📷</div>
+          <div class="cam-lbl">GİRİŞ KAPISI</div>
+          <div class="cam-status">● CANLI</div>
+        </div>
+        <div class="cam panel" onclick="camView('Bahçe')">
+          <div class="cam-ic">📷</div>
+          <div class="cam-lbl">BAHÇE</div>
+          <div class="cam-status">● CANLI</div>
+        </div>
+        <div class="cam panel" onclick="camView('Salon')">
+          <div class="cam-ic">📷</div>
+          <div class="cam-lbl">SALON</div>
+          <div class="cam-status">● CANLI</div>
+        </div>
+        <div class="cam panel" onclick="camView('Garaj')">
+          <div class="cam-ic">📷</div>
+          <div class="cam-lbl">GARAJ</div>
+          <div class="cam-status r">● ÇEVRİMDIŞI</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SYSTEM VIEW -->
+  <div class="view" id="view-system">
+    <div class="panel" style="flex:1">
+      <div class="ph"><div class="dot"></div>SİSTEM METRİKLERİ</div>
+      <div class="pb">
+        <div class="metric">
+          <div class="metric-top"><span>İŞLEMCİ</span><span class="mv" id="sCpu">--</span></div>
+          <div class="bar-t"><div class="bar-f" id="sCpuBar" style="width:0%"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-top"><span>BELLEK</span><span class="mv" id="sRam">--</span></div>
+          <div class="bar-t"><div class="bar-f" id="sRamBar" style="width:0%"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-top"><span>AĞ HIZI ↑↓</span><span class="mv" id="sNet">2.4 / 1.1 Mb/s</span></div>
+          <div class="bar-t"><div class="bar-f" id="sNetBar" style="width:35%;background:linear-gradient(90deg,var(--green),#00ff88)"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-top"><span>BATARYA</span><span class="mv g" id="sBat">87%</span></div>
+          <div class="bar-t"><div class="bar-f" style="width:87%;background:linear-gradient(90deg,#00aa44,var(--green))"></div></div>
+        </div>
+        <div class="metric">
+          <div class="metric-top"><span>DEPOLAMA</span><span class="mv">128 / 512 GB</span></div>
+          <div class="bar-t"><div class="bar-f" style="width:25%"></div></div>
+        </div>
+        <div class="sys-grid">
+          <div class="sys-card"><div class="sc-v g">5</div><div class="sc-l">CİHAZ</div></div>
+          <div class="sys-card"><div class="sc-v">98%</div><div class="sc-l">ARC GÜÇ</div></div>
+          <div class="sys-card"><div class="sc-v gl">7.4.2</div><div class="sc-l">VERSİYON</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="flex:1">
+      <div class="ph"><div class="dot"></div>ÇEVRE TARAMA</div>
+      <div class="pb">
+        <div class="radar-wrap">
+          <div class="radar">
+            <div class="radar-xl"></div>
+            <div class="radar-yl"></div>
+            <div class="radar-c"></div>
+            <div class="radar-l"></div>
+            <div class="radar-d" style="top:30%;left:62%"></div>
+            <div class="radar-d" style="top:66%;left:27%;animation-delay:0.6s"></div>
+            <div class="radar-d" style="top:44%;left:78%;animation-delay:1.1s"></div>
+            <div class="radar-d" style="top:72%;left:55%;animation-delay:1.8s"></div>
+          </div>
+        </div>
+        <div style="text-align:center;font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--dim)">4 CİHAZ ALGILANDI</div>
+      </div>
+    </div>
+    <div class="panel" style="flex:1">
+      <div class="ph"><div class="dot"></div>BİLDİRİMLER</div>
+      <div class="pb" id="notifFeed">
+        <div class="notif-i ok"><div class="nt">--:--</div>Sistem başlatıldı</div>
+        <div class="notif-i warn"><div class="nt">--:--</div>Ses sistemi çevrimdışı</div>
+        <div class="notif-i"><div class="nt">--:--</div>Tüm bağlantılar aktif</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS VIEW -->
+  <div class="view" id="view-settings">
+    <div class="panel" style="flex:1;overflow-y:auto">
+      <div class="ph"><div class="dot"></div>SİSTEM AYARLARI</div>
+      <div class="pb">
+        <div class="section-title">◆ KİŞİSELLEŞTİRME</div>
+        <div class="setting-row">
+          <div><div class="setting-lbl">Kullanıcı Adı</div><div class="setting-sub">Efendim diye çağırılacak isim</div></div>
+          <input class="name-in" id="userName" value="Efendim" oninput="updateUser()">
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-lbl">Ses Yanıtı (TTS)</div><div class="setting-sub">JARVIS sesli konuşsun</div></div>
+          <label class="toggle"><input type="checkbox" id="ttsOn" onchange="ttsToggle()"><span class="tog-sl"></span></label>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-lbl">Karanlık Arka Plan</div><div class="setting-sub">Tam siyah arkaplan</div></div>
+          <label class="toggle"><input type="checkbox" checked onchange="darkToggle(this)"><span class="tog-sl"></span></label>
+        </div>
+        <div class="section-title">◆ BİLDİRİMLER</div>
+        <div class="setting-row">
+          <div><div class="setting-lbl">Sistem Bildirimleri</div><div class="setting-sub">Cihaz durum uyarıları</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="tog-sl"></span></label>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-lbl">Güvenlik Uyarıları</div><div class="setting-sub">Hareket algılama bildirimi</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="tog-sl"></span></label>
+        </div>
+        <div class="section-title">◆ BAĞLANTI</div>
+        <div class="setting-row">
+          <div><div class="setting-lbl">Wi-Fi Aygıt Tarama</div><div class="setting-sub">Yerel ağdaki cihazları tara</div></div>
+          <label class="toggle"><input type="checkbox"><span class="tog-sl"></span></label>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-lbl">Bluetooth</div><div class="setting-sub">BT cihaz bağlantısı</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="tog-sl"></span></label>
+        </div>
+        <div class="section-title">◆ GİZLİLİK</div>
+        <div class="setting-row">
+          <div><div class="setting-lbl">Konuşma Geçmişi</div><div class="setting-sub">Sohbetleri kaydet</div></div>
+          <label class="toggle"><input type="checkbox" checked><span class="tog-sl"></span></label>
+        </div>
+        <div class="setting-row">
+          <div><div class="setting-lbl">Analitik Paylaşım</div><div class="setting-sub">Anonim kullanım verisi</div></div>
+          <label class="toggle"><input type="checkbox"><span class="tog-sl"></span></label>
+        </div>
+        <div class="section-title">◆ HAKKINDA</div>
+        <div style="padding:10px;background:rgba(0,212,255,0.03);border:1px solid rgba(0,212,255,0.12);border-radius:5px;font-family:'Share Tech Mono',monospace;font-size:0.58rem;color:var(--dim);line-height:1.8">
+          J.A.R.V.I.S v9.1.0<br>
+          AI: OpenRouter / Claude<br>
+          Android Web App<br>
+          © 2025 — TÜM SİSTEMLER AKTİF
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POWER VIEW -->
+  <div class="view" id="view-power">
+    <div class="power-arc"></div>
+    <div style="font-family:'Orbitron',sans-serif;font-size:0.7rem;letter-spacing:3px;color:var(--cyan);margin-bottom:16px;text-align:center;text-shadow:0 0 12px var(--cyan)">GÜÇ YÖNETİMİ</div>
+    <div class="power-grid">
+      <button class="pwb" onclick="powCmd('restart')">🔄 YENİDEN BAŞLAT</button>
+      <button class="pwb" onclick="powCmd('sleep')">💤 UYKU MODU</button>
+      <button class="pwb" onclick="powCmd('save')">🌿 TASARRUF</button>
+      <button class="pwb" onclick="powCmd('boost')">⚡ BOOST MODU</button>
+      <button class="pwb red" onclick="powCmd('shutdown')">⏻ KAPAT</button>
+      <button class="pwb" onclick="powCmd('update')">📡 GÜNCELLE</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- NAV BAR -->
+<nav class="nav">
+  <button class="nb active" id="nb-chat" onclick="switchView('chat')"><span class="bi">💬</span><span class="bl">CHAT</span></button>
+  <button class="nb" id="nb-devices" onclick="switchView('devices')"><span class="bi">🏠</span><span class="bl">CİHAZLAR</span></button>
+  <button class="nb" id="nb-research" onclick="switchView('research')"><span class="bi">🔬</span><span class="bl">ARAŞTIRMA</span></button>
+  <button class="nb" id="nb-media" onclick="switchView('media')"><span class="bi">🎬</span><span class="bl">MEDYA</span></button>
+  <button class="nb" id="nb-security" onclick="switchView('security')"><span class="bi">🛡️</span><span class="bl">GÜVENLİK</span></button>
+  <button class="nb" id="nb-system" onclick="switchView('system')"><span class="bi">📊</span><span class="bl">SİSTEM</span></button>
+  <button class="nb" id="nb-settings" onclick="switchView('settings')"><span class="bi">⚙️</span><span class="bl">AYARLAR</span></button>
+  <button class="nb" id="nb-power" onclick="switchView('power')"><span class="bi">⚡</span><span class="bl">GÜÇ</span></button>
+</nav>
+
+<!-- MODAL: DEVICE CONTROL -->
+<div class="modal-overlay" id="devModal">
+  <div class="modal">
+    <button class="mcls" onclick="closeModal('devModal')">✕</button>
+    <h2 id="devModalTitle">CİHAZ KONTROL</h2>
+    <div class="cmd-grid" id="devModalBody"></div>
+  </div>
+</div>
+
+<script>
+// ═══════ CONFIG ═══════
+const API = 'https://openrouter.ai/api/v1/chat/completions';
+let APIKEY = localStorage.getItem('jarvis_key')||'';
+let userName = 'Efendim';
+let ttsEnabled = false;
+let history = [];
+let resTab = 'deep';
+
+const PROMPT = `Sen J.A.R.V.I.S adlı yapay zeka asistanısın. Iron Man filmindeki JARVIS gibi davranıyorsun.
+Kullanıcıya "${userName}" diye hitap ediyorsun. Türkçe konuşuyorsun. Profesyonel, zeki ve hafif alaycı tonun var.
+YAPTIKLARINDA: TV/klima/ışık/kilit kontrolü, film-dizi-müzik önerisi, hava durumu, araştırma, alarm, takvim, çeviri, şaka, hesaplama.
+Cihaz komutlarında [KOMUT:TV_AÇ], [KOMUT:TV_KAPAT], [KOMUT:IŞIK_AÇ], [KOMUT:KLIMA_AYAR] formatını kullan.
+Cevaplarını kısa ve net tut, gerektiğinde detaylı ol.`;
+
+// ═══════ CLOCK ═══════
+function tickClock(){
+  const n=new Date();
+  const p=v=>String(v).padStart(2,'0');
+  document.getElementById('clock').textContent=`${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())}`;
+  const D=['PAZ','PAZ','SAL','ÇAR','PER','CUM','CUM'];
+  const M=['OCA','ŞUB','MAR','NİS','MAY','HAZ','TEM','AĞU','EYL','EKİ','KAS','ARA'];
+  document.getElementById('dateLbl').textContent=`${D[n.getDay()]} ${n.getDate()} ${M[n.getMonth()]} ${n.getFullYear()}`;
+}
+setInterval(tickClock,1000);tickClock();
+
+// ═══════ METRICS ═══════
+function updateMetrics(){
+  const cpu=15+Math.floor(Math.random()*35);
+  const ram=52+Math.floor(Math.random()*22);
+  document.getElementById('hCpu').textContent=cpu+'%';
+  document.getElementById('hRam').textContent=ram+'%';
+  document.getElementById('sCpu').textContent=cpu+'%';
+  document.getElementById('sRam').textContent=ram+'%';
+  const cb=document.getElementById('sCpuBar');
+  cb.style.width=cpu+'%';
+  cb.className='bar-f'+(cpu>80?' crit':cpu>60?' warn':'');
+  document.getElementById('sRamBar').style.width=ram+'%';
+}
+setInterval(updateMetrics,3000);updateMetrics();
+
+// ═══════ VISUALIZER ═══════
+const viz=document.getElementById('viz');
+for(let i=0;i<18;i++){
+  const b=document.createElement('div');b.className='vb';
+  const mn=3+Math.random()*8,mx=12+Math.random()*20,d=0.35+Math.random()*0.7;
+  b.style.cssText=`--mn:${mn}px;--mx:${mx}px;--d:${d}s;height:${mn}px;animation-delay:${Math.random()*0.7}s`;
+  viz.appendChild(b);
+}
+
+// ═══════ VIEW SWITCHER ═══════
+function switchView(v){
+  document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(e=>e.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('nb-'+v).classList.add('active');
+}
+
+// ═══════ DEVICES ═══════
+const devices=[
+  {id:'TV',ic:'📺',name:'Salon TV',status:'ÇEVRİMİÇİ — Samsung 65"',online:true,btns:['GÜÇ','FİLM','KANAL']},
+  {id:'AC',ic:'❄️',name:'Klima — Oda',status:'ÇEVRİMİÇİ — 22°C',online:true,btns:['AÇ','KAPAT','AYAR']},
+  {id:'LIGHTS',ic:'💡',name:'Akıllı Aydınlatma',status:'ÇEVRİMİÇİ — 4 bölge',online:true,btns:['AÇ','KAPAT']},
+  {id:'SPEAKER',ic:'🔊',name:'Ses Sistemi',status:'ÇEVRİMDIŞI',online:false,btns:['BAĞLAN']},
+  {id:'PHONE',ic:'📱',name:'Android Telefon',status:'ÇEVRİMİÇİ — Bu Cihaz',online:true,btns:['DURUM']},
+  {id:'CAM',ic:'📷',name:'Güvenlik Kameraları',status:'ÇEVRİMİÇİ — 3 aktif',online:true,btns:['CANLI','KAYDET']},
+  {id:'LOCK',ic:'🔒',name:'Akıllı Kilit',status:'KİLİTLİ — Güvenli',online:true,btns:['AÇ','KİLİTLE']},
+  {id:'ROUTER',ic:'📡',name:'Wi-Fi Router',status:'ÇEVRİMİÇİ — 4 bağlı',online:true,btns:['YENİDEN BAŞLAT']},
+];
+const devList=document.getElementById('devList');
+devices.forEach(d=>{
+  const el=document.createElement('div');
+  el.className='dev-item'+(d.online?'':' offline');
+  el.innerHTML=`<div class="dev-ic">${d.ic}</div>
+    <div class="dev-info">
+      <div class="dev-name">${d.name}</div>
+      <div class="dev-status${d.online?'':' r'}">● ${d.status}</div>
+    </div>
+    <div class="dev-btns">
+      ${d.btns.map(b=>`<button class="db" onclick="event.stopPropagation();devCmd('${d.id}','${b}')">${b}</button>`).join('')}
+    </div>`;
+  el.onclick=()=>openDevModal(d.id);
+  devList.appendChild(el);
+});
+
+const devCfg={
+  TV:{title:'📺 TV KONTROL',cmds:[
+    ['▶ AÇ','TV açıldı efendim.'],['⏹ KAPAT','TV kapatıldı efendim.'],
+    ['🎬 FİLM ÖNER','TV\'de iyi film arıyorum.'],['📡 KANAL+','Kanal değiştirildi efendim.'],
+    ['🔊 SES+','Ses artırıldı.'],['🔇 SES-','Ses azaltıldı.'],
+    ['📺 NETFLIX','Netflix açılıyor efendim.'],['▶️ YOUTUBE','YouTube açılıyor efendim.'],
+  ]},
+  AC:{title:'❄️ KLİMA KONTROL',cmds:[
+    ['▶ AÇ','Klima açıldı 22°C efendim.'],['⏹ KAPAT','Klima kapatıldı efendim.'],
+    ['🌡 18°C','Klima 18°C ye ayarlandı.'],['🌡 20°C','Klima 20°C ye ayarlandı.'],
+    ['🌡 24°C','Klima 24°C ye ayarlandı.'],['🌡 26°C','Klima 26°C ye ayarlandı.'],
+    ['❄️ SOĞUT','Soğutma modu aktif.'],['🔥 ISIT','Isıtma modu aktif.'],
+  ]},
+  LIGHTS:{title:'💡 IŞIK KONTROL',cmds:[
+    ['💡 HEPSİ AÇ','Tüm ışıklar açıldı efendim.'],['🌑 HEPSİ KAPAT','Tüm ışıklar kapatıldı.'],
+    ['🌅 SALON','Salon ışıkları açıldı.'],['🛏 YATAK OD.','Yatak odası ışıkları açıldı.'],
+    ['🟡 SICAK TON','Sıcak ışık tonu aktif.'],['⚪ BEYAZ TON','Beyaz ışık tonu aktif.'],
+    ['🌙 GECE MODU','Gece modu aktif efendim.'],['🎨 RGB MODU','RGB aydınlatma aktif.'],
+  ]},
+  LOCK:{title:'🔒 AKILLI KİLİT',cmds:[
+    ['🔒 KİLİTLE','Kapı kilitlendi efendim.'],['🔓 AÇIK','Kapı açıldı efendim.'],
+    ['👤 MİSAFİR','Misafir erişim kodu oluşturuldu.'],['📋 GEÇMİŞ','Giriş-çıkış geçmişi listeleniyor.'],
+  ]},
+  CAM:{title:'📷 GÜVENLİK KAMERALARI',cmds:[
+    ['👁 CANLI GÖR.','Kamera görüntüleri aktarılıyor.'],['📼 KAYDET','Kayıt başlatıldı efendim.'],
+    ['🚪 GİRİŞ','Giriş kamerası gösteriliyor.'],['🌿 BAHÇE','Bahçe kamerası gösteriliyor.'],
+  ]},
+  SPEAKER:{title:'🔊 SES SİSTEMİ',cmds:[
+    ['🔌 BAĞLAN','Ses sistemi bağlantısı deneniyor...'],['📻 RADYO','Radyo bağlantısı deneniyor.'],
+  ]},
+  PHONE:{title:'📱 TELEFON YÖNETİMİ',cmds:[
+    ['📶 AĞ DURUMU','Ağ bağlantısı kontrol ediliyor...'],['🔋 BATARYA','Batarya durumu alınıyor...'],
+    ['📷 KAMERA','Kamera uygulaması açılıyor...'],['🔔 BİLDİRİMLER','Bildirimler listeleniyor...'],
+  ]},
+  ROUTER:{title:'📡 ROUTER YÖNETİMİ',cmds:[
+    ['🔄 YENİDEN BAŞLAT','Router yeniden başlatılıyor efendim.'],['📊 TRAFİK','Ağ trafiği analiz ediliyor.'],
+    ['🔒 GÜVENLİK','Router güvenlik taraması yapılıyor.'],['📋 BAĞLI CİHAZLAR','Bağlı cihazlar listeleniyor.'],
+  ]},
+};
+function openDevModal(id){
+  const c=devCfg[id];if(!c)return;
+  document.getElementById('devModalTitle').textContent=c.title;
+  const b=document.getElementById('devModalBody');b.innerHTML='';
+  c.cmds.forEach(([lbl,msg])=>{
+    const btn=document.createElement('button');btn.className='cmdb';
+    btn.textContent=lbl;
+    btn.onclick=()=>{addNotif(msg,'normal');closeModal('devModal');addChat('jarvis',msg)};
+    b.appendChild(btn);
+  });
+  document.getElementById('devModal').classList.add('open');
+}
+function devCmd(id,btn){addNotif(`${id}: ${btn} komutu gönderildi`,'normal')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+// ═══════ CHAT ═══════
+function addChat(role,text){
+  const c=document.getElementById('chatMsgs');
+  const d=document.createElement('div');
+  d.className='msg '+(role==='user'?'user':'jarvis');
+  d.innerHTML=`<div class="mav">${role==='user'?'👤':'🤖'}</div>
+    <div><div class="mlbl">${role==='user'?'SİZ':'J.A.R.V.I.S'}</div>
+    <div class="mb">${text}</div></div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+  if(role==='jarvis'&&ttsEnabled)speak(text);
+}
+function showTyping(){
+  const c=document.getElementById('chatMsgs');
+  const d=document.createElement('div');d.className='msg jarvis';d.id='typing';
+  d.innerHTML=`<div class="mav">🤖</div><div><div class="mlbl">J.A.R.V.I.S</div>
+    <div class="mb"><div class="typing-i"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function removeTyping(){const t=document.getElementById('typing');if(t)t.remove()}
+let sending=false;
+async function sendMsg(){
+  const inp=document.getElementById('userIn');
+  const txt=inp.value.trim();
+  if(!txt||sending)return;
+  inp.value='';
+  addChat('user',txt);
+  history.push({role:'user',content:txt});
+  detectDeviceCmd(txt.toLowerCase());
+  sending=true;showTyping();
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+APIKEY,'HTTP-Referer':'https://cagri911.github.io','X-Title':'JARVIS'},
+      body:JSON.stringify({model:'anthropic/claude-3-haiku',max_tokens:1000,
+        messages:[{role:'system',content:PROMPT},...history]})});
+    const data=await r.json();
+    const reply=data.choices?.[0]?.message?.content||data.error?.message||'Sistem hatası efendim.';
+    history.push({role:'assistant',content:reply});
+    removeTyping();addChat('jarvis',reply);
+    parseCmd(reply);addNotif('JARVIS yanıt verdi','normal');
+  }catch(e){
+    removeTyping();addChat('jarvis',`Sistem hatası efendim: ${e.message}`);
+  }
+  sending=false;
+}
+function detectDeviceCmd(t){
+  if((t.includes('tv')&&(t.includes('aç')||t.includes('başlat'))))addNotif('TV açılıyor — Salon','normal');
+  if(t.includes('tv')&&t.includes('kapat'))addNotif('TV kapatılıyor','warn');
+  if(t.includes('ışık')&&t.includes('aç'))addNotif('Tüm ışıklar açılıyor','normal');
+  if(t.includes('klima'))addNotif('Klima komutu alındı','normal');
+}
+function parseCmd(t){
+  if(t.includes('[KOMUT:TV_AÇ]'))addNotif('TV açıldı — Salon','normal');
+  if(t.includes('[KOMUT:TV_KAPAT]'))addNotif('TV kapatıldı','warn');
+  if(t.includes('[KOMUT:IŞIK_AÇ]'))addNotif('Tüm ışıklar açıldı','normal');
+}
+
+// ═══════ VOICE ═══════
+let recognition=null,listening=false;
+function toggleVoice(){
+  if(!('webkitSpeechRecognition' in window||'SpeechRecognition' in window)){
+    addChat('jarvis','Tarayıcınız ses tanımayı desteklemiyor efendim. Chrome veya Samsung Internet deneyin.');return;
+  }
+  if(listening){recognition?.stop();return}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recognition=new SR();
+  recognition.lang='tr-TR';recognition.continuous=false;recognition.interimResults=false;
+  recognition.onstart=()=>{listening=true;document.getElementById('voiceBtn').classList.add('listening');
+    addNotif('Ses tanıma aktif — Konuşun...','normal')};
+  recognition.onresult=e=>{
+    document.getElementById('userIn').value=e.results[0][0].transcript;sendMsg()};
+  recognition.onend=()=>{listening=false;document.getElementById('voiceBtn').classList.remove('listening')};
+  recognition.onerror=e=>{listening=false;document.getElementById('voiceBtn').classList.remove('listening');
+    addChat('jarvis',`Ses hatası efendim: ${e.error}`)};
+  recognition.start();
+}
+
+// ═══════ TTS ═══════
+function speak(text){
+  if(!ttsEnabled)return;
+  const u=new SpeechSynthesisUtterance(text.substring(0,200));
+  u.lang='tr-TR';u.rate=1.05;u.pitch=0.9;
+  window.speechSynthesis.speak(u);
+}
+function ttsToggle(){ttsEnabled=document.getElementById('ttsOn').checked}
+
+// ═══════ QUICK ACTIONS ═══════
+const qMsgs={
+  film:'Bana aksiyon veya bilim kurgu film öner.',
+  music:'Rahatlatıcı müzik çal.',
+  alarm:'Yarın sabah 8:00 için alarm kur.',
+  weather:'Bugün hava nasıl?',
+  navigate:'En yakın restoranlar nerede?',
+  news:'Bugünün önemli haberleri neler?',
+  lock:'Tüm kapıları kilitle.',
+  calc:'2024 yılında Türkiye\'nin nüfusu kaçtı?',
+  translate:'Hello, how are you? Türkçeye çevir.',
+  timer:'10 dakika sayaç başlat.',
+  remind:'Yarın saat 15:00 de toplantım var, bana hatırlat.',
+  joke:'Bana komik bir şaka anlat.',
+};
+function qAct(k){
+  switchView('chat');
+  document.getElementById('userIn').value=qMsgs[k]||'';sendMsg();
+}
+
+// ═══════ RESEARCH ═══════
+function setResTab(t){
+  resTab=t;
+  document.querySelectorAll('.rtab').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+}
+function setResInput(v){document.getElementById('resIn').value=v}
+function clearRes(){document.getElementById('resOut').textContent='Araştırma motoru hazır efendim.';
+  document.getElementById('resIn').value=''}
+async function doResearch(){
+  const q=document.getElementById('resIn').value.trim();
+  if(!q)return;
+  const spinner=document.getElementById('resSpinner');
+  const out=document.getElementById('resOut');
+  spinner.classList.add('show');out.textContent='';
+  document.getElementById('spinnerTxt').textContent='Araştırılıyor...';
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+APIKEY,'HTTP-Referer':'https://cagri911.github.io','X-Title':'JARVIS'},
+      body:JSON.stringify({model:'anthropic/claude-3-haiku',max_tokens:1000,
+        messages:[{role:'user',content:`Sen JARVIS adlı yapay zeka asistanısın. Şu konuda Türkçe araştırma yap, sonuçları detaylı ve yapılandırılmış biçimde sun: ${q}`}]})});
+    const d=await r.json();
+    out.textContent=d.choices?.[0]?.message?.content||'Sonuç alınamadı efendim.';
+  }catch(e){out.textContent='Araştırma hatası: '+e.message}
+  spinner.classList.remove('show');
+}
+async function doDeepResearch(){
+  const q=document.getElementById('resIn').value.trim();
+  if(!q)return;
+  const spinner=document.getElementById('resSpinner');
+  const out=document.getElementById('resOut');
+  spinner.classList.add('show');out.textContent='';
+  document.getElementById('spinnerTxt').textContent='Derin analiz yapılıyor...';
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+APIKEY,'HTTP-Referer':'https://cagri911.github.io','X-Title':'JARVIS'},
+      body:JSON.stringify({model:'anthropic/claude-3-haiku',max_tokens:1000,
+        messages:[{role:'user',content:`Sen JARVIS'sin. Şu konu hakkında derin, kapsamlı, çok boyutlu analiz yap. Tarihsel bağlam, güncel durum, gelecek tahminleri, artılar ve eksiler dahil Türkçe olarak sun: ${q}`}]})});
+    const d=await r.json();
+    out.textContent=d.choices?.[0]?.message?.content||'Sonuç alınamadı efendim.';
+  }catch(e){out.textContent='Hata: '+e.message}
+  spinner.classList.remove('show');
+}
+
+// ═══════ MEDIA ═══════
+async function searchMedia(){
+  const q=document.getElementById('mediaIn').value.trim();
+  if(!q)return;mediaLoad(q);
+}
+async function mediaFilter(el,q){
+  document.querySelectorAll('.mcat').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');mediaLoad(q);
+}
+async function mediaLoad(q){
+  const loading=document.getElementById('mediaLoading');
+  const out=document.getElementById('mediaOut');
+  loading.style.display='block';out.innerHTML='';
+  try{
+    const r=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+APIKEY,'HTTP-Referer':'https://cagri911.github.io','X-Title':'JARVIS'},
+      body:JSON.stringify({model:'anthropic/claude-3-haiku',max_tokens:1000,
+        messages:[{role:'user',content:`Sen JARVIS'sin. Şu istek için 5-6 öneri sun. Her öneriyi şu formatta JSON olarak ver (sadece JSON array, başka metin yok):
+[{"emoji":"🎬","title":"Film Adı","meta":"Tür • Yıl • IMDb Puanı","desc":"Kısa açıklama"}]
+İstek: ${q}`}]})});
+    const d=await r.json();
+    let txt=d.choices?.[0]?.message?.content||'[]';
+    txt=txt.replace(/```json|```/g,'').trim();
+    const items=JSON.parse(txt);
+    out.innerHTML='';
+    items.forEach(item=>{
+      const card=document.createElement('div');card.className='media-card';
+      card.innerHTML=`<div class="mc-thumb">${item.emoji||'🎬'}</div>
+        <div class="mc-info">
+          <div class="mc-title">${item.title}</div>
+          <div class="mc-meta">${item.meta}</div>
+          <div style="font-size:0.62rem;color:var(--dim);margin-top:2px">${item.desc||''}</div>
+        </div>
+        <div class="mc-action">
+          <button class="mca tv" onclick="sendToTV('${item.title}')">📺 TV</button>
+        </div>`;
+      out.appendChild(card);
+    });
+  }catch(e){out.innerHTML=`<div style="padding:10px;color:var(--dim);font-size:0.7rem">Sonuç alınamadı: ${e.message}</div>`}
+  loading.style.display='none';
+}
+function sendToTV(title){
+  switchView('chat');
+  document.getElementById('userIn').value=`TV'de "${title}" filmini aç`;sendMsg();
+}
+
+// ═══════ SECURITY ═══════
+function secCmd(cmd){
+  const msgs={
+    lock:'Tüm kapılar kilitlendi efendim.',
+    alarm:'Alarm sistemi aktif edildi efendim.',
+    guest:'Misafir modu aktif. Ön kapı kilitli efendim.',
+    report:'Güvenlik raporu hazırlanıyor efendim...',
+    vpn:'VPN bağlantısı kuruldu efendim.',
+    emergency:'⚠️ ACİL DURUM! Servisler aranıyor efendim!',
+  };
+  addNotif(msgs[cmd]||cmd,'warn');
+  addChat('jarvis',msgs[cmd]||cmd);
+  if(cmd==='lock'){
+    document.getElementById('secStatus').textContent='● KİLİTLİ — GÜVENDE';
+    document.getElementById('secStatus').classList.add('g');
+  }
+  if(cmd==='emergency'){
+    document.getElementById('secStatus').textContent='● ACİL DURUM — UYARI';
+    document.getElementById('secStatus').style.color='var(--red)';
+  }
+}
+function camView(name){addNotif(`${name} kamerası açılıyor...`,'normal');
+  addChat('jarvis',`${name} kamera görüntüsü aktarılıyor efendim.`);switchView('chat')}
+
+// ═══════ POWER ═══════
+function powCmd(cmd){
+  const msgs={restart:'Sistem yeniden başlatılıyor efendim...',
+    sleep:'Uyku moduna geçiliyor efendim. İyi geceler.',
+    save:'Güç tasarrufu modu aktif efendim.',
+    boost:'Boost modu aktif! Tüm kaynaklar devrede efendim.',
+    shutdown:'Tüm sistemler kapatılıyor efendim. Hoşça kalın.',
+    update:'Sistem güncellemeleri kontrol ediliyor efendim...'};
+  addChat('jarvis',msgs[cmd]);addNotif(msgs[cmd],'warn');switchView('chat');
+}
+
+// ═══════ NOTIFICATIONS ═══════
+function addNotif(txt,type='normal'){
+  const f=document.getElementById('notifFeed');
+  const n=new Date();
+  const p=v=>String(v).padStart(2,'0');
+  const t=`${p(n.getHours())}:${p(n.getMinutes())}`;
+  const d=document.createElement('div');
+  d.className='notif-i'+(type==='warn'?' warn':type==='ok'?' ok':type==='alert'?' alert':'');
+  d.innerHTML=`<div class="nt">${t}</div>${txt}`;
+  f.insertBefore(d,f.firstChild);
+  if(f.children.length>12)f.removeChild(f.lastChild);
+}
+
+// ═══════ SETTINGS ═══════
+function updateUser(){userName=document.getElementById('userName').value||'Efendim'}
+function darkToggle(el){document.documentElement.style.setProperty('--bg',el.checked?'#000a14':'#0a0a1a')}
+
+
+function saveApiKey(){
+  const k = document.getElementById('apiKeyIn').value.trim();
+  if(!k.startsWith('sk-')){addChat('jarvis','Geçersiz anahtar efendim. sk-or- ile başlamalı.');return;}
+  APIKEY = k;
+  localStorage.setItem('jarvis_key', k);
+  document.getElementById('apiModal').classList.remove('open');
+  addChat('jarvis','API anahtarı kaydedildi efendim. Tüm sistemler aktif! Size nasıl yardımcı olabilirim?');
+  addNotif('API bağlantısı kuruldu','ok');
+}
+function checkApiKey(){
+  if(!APIKEY) document.getElementById('apiModal').classList.add('open');
+}
+
+// ═══════ STARTUP ═══════
+setTimeout(()=>{addNotif('Sistem başlatma tamamlandı','ok');checkApiKey();},800);
+setTimeout(()=>addNotif('5 cihaz tarandı — 4 aktif','normal'),2200);
+setTimeout(()=>addNotif('JARVIS hazır efendim','ok'),3500);
+
+// ═══════ MODAL OVERLAY CLOSE ═══════
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')});
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+});
+</script>
+
+<!-- API KEY MODAL -->
+<div class="modal-overlay" id="apiModal" style="z-index:9999">
+  <div class="modal" style="max-width:360px">
+    <h2>🔑 API ANAHTARI</h2>
+    <p style="font-family:'Share Tech Mono',monospace;font-size:0.6rem;color:var(--dim);text-align:center;margin-bottom:14px;line-height:1.7">
+      openrouter.ai adresine git<br>API Keys → Yeni Anahtar oluştur.<br>
+      <span style="color:var(--gold)">sk-or-v1- ile başlar</span>
+    </p>
+    <input id="apiKeyIn" class="txt-in" style="width:100%;margin-bottom:12px" 
+      placeholder="sk-or-v1-..." type="password">
+    <button class="send-btn" style="width:100%;padding:12px;font-size:0.7rem" onclick="saveApiKey()">
+      ✅ KAYDET VE BAŞLAT
+    </button>
+    <p style="font-family:'Share Tech Mono',monospace;font-size:0.5rem;color:var(--dim);text-align:center;margin-top:10px">
+      Anahtar yalnızca cihazınızda saklanır
+    </p>
+  </div>
+</div>
+
+</body>
+</html>
